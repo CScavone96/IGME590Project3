@@ -1,0 +1,32 @@
+{
+  "name": "IGME590Project3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/app.js",
+  "dependencies": {
+    "eslint-config-airbnb": "^15.1.0",
+    "eslint": "^4.7.2",
+    "eslint-plugin-import": "^2.7.0",
+    "socket.io": "^2.0.3",
+    "xxhashjs": "^0.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node ./src/app.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"Tests complete\"",
+    "build": "babel ./client --out-file ./hosted/bundle.js",
+    "watch": "babel --watch ./client --out-file ./hosted/bundle.js",
+    "nodemon": "nodemon --watch ./src ./src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CScavone96/IGME590Project3.git"
+  },
+  "author": "Clayton Scavone",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CScavone96/IGME590Project3/issues"
+  },
+  "homepage": "https://github.com/CScavone96/IGME590Project3#readme"
+}
