@@ -87,7 +87,8 @@ io.on('connection', (sock) => {
   socket.on('movementUpdate', (data) => {
     socket.square = data;
     socket.square.lastUpdate = new Date().getTime();
-    io.sockets.in('room1').emit('updatedMovement', socket.square);
+    //io.sockets.in('room1').emit('updatedMovement', socket.square);
+    socket.broadcast.to('room1').emit('updatedMovement', socket.square);
   });
 
   socket.on('shoot', (data) => {
