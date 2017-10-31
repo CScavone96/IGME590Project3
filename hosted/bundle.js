@@ -103,6 +103,15 @@ const newBullet = (data) => {
   bullets[data.count] = data;
 }
 
+const bulletHit = (data) => {
+    delete bullets[data.bullet.count];
+}
+
+const bulletUpdate = (data) => {
+    bullets[data.count] = data;
+}
+
+
 const redraw = (time) => {
   updatePosition();
   ctx.setTransform(1,0,0,1,0,0);
@@ -159,7 +168,8 @@ const redraw = (time) => {
   const bulls = Object.keys(bullets);
   for(let i = 0; i < bulls.length; i++) {
 	let bullet = bullets[bulls[i]];
-    if(bullet.dir == 0){
+    console.log(bullets);
+    /*if(bullet.dir == 0){
     bullet.y -= bullet.speed;
     }    
     else if(bullet.dir == 1){
@@ -186,14 +196,14 @@ const redraw = (time) => {
     else if(bullet.dir == 7){
     bullet.x -= bullet.speed;
     bullet.y -= bullet.speed;
-    }
+    }*/
     ctx.fillStyle="#00ffff";
     ctx.fillRect(bullet.x, bullet.y, 7, 7);  
   }
   
   ctx.filter = "none"
   ctx.fillStyle="#00ffff";
-  console.log(playerSquare.dir);
+  //console.log(playerSquare.dir);
   drawRotated((playerSquare.dir)*(360/8), playerSquare);
   //ctx.drawImage(spaceShip, playerSquare.x, playerSquare.y, playerSquare.width, playerSquare.height);
   ctx.strokeStyle="#ff00ff";
@@ -284,11 +294,12 @@ const init = () => {
 	socket.on('joined', setUser);
     socket.on('setWorld', setWorld);
 	socket.on('setStars', setStars);
-    
+
 	socket.on('updatedMovement', update);
 		
-    socket.on('newBullet', newBullet);
-	
+    socket.on('newBullet', newBullet);   		
+    socket.on('bulletHit', bulletHit);
+    socket.on('bulletUpdate', bulletUpdate);
     
 	socket.on('left', removeUser);
 };
