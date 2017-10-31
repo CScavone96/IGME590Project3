@@ -108,7 +108,7 @@ const bulletHit = (data) => {
 }
 
 const bulletUpdate = (data) => {
-    bullets[data.count] = data;
+    bullets = data;
 }
 
 
@@ -168,7 +168,7 @@ const redraw = (time) => {
   const bulls = Object.keys(bullets);
   for(let i = 0; i < bulls.length; i++) {
 	let bullet = bullets[bulls[i]];
-    console.log(bullets);
+    //console.log(bullets);
     /*if(bullet.dir == 0){
     bullet.y -= bullet.speed;
     }    
@@ -219,7 +219,7 @@ const drawRotated = (degrees, square) => {
     let squareHeight = square.height*1//.25;
     ctx.translate(square.x+squareWidth/2, square.y+squareHeight/2 );
     ctx.rotate(degrees*Math.PI/180);
-    ctx.drawImage(spaceShip, -squareWidth/2, -squareHeight/2, squareWidth, squareHeight);
+    ctx.drawImage(spaceShip, -squareWidth/2, -squareHeight/2);
     ctx.restore();
 }
 
