@@ -28,10 +28,37 @@ const updateHP = (data) => {
   
   const square = squares[data.hash]; 
   
-  if(squares[data.hash].lastUpdate >= data.lastUpdate) {
+  /*if(squares[data.hash].lastUpdate >= data.lastUpdate) {
+	return;
+  } 
+  square.lastUpdate = data.lastUpdate;*/
+  //square.prevX = data.prevX;
+  //square.prevY = data.prevY;
+  //square.x = data.x;
+  //square.y = data.y;
+  //square.destX = data.destX;
+  //square.destY = data.destY;
+  //square.alpha = 0;
+  square.hp = data.hp;
+}
+
+
+const respawn = (data) => { //Sets the players position for respawns
+   if(!squares[data.hash]) {
+	squares[data.hash] = data;
 	return;
   }
-  square.hp = data.hp;
+  
+  const square = squares[data.hash]; 
+  
+  square.lastUpdate = data.lastUpdate;
+  square.prevX = data.prevX;
+  square.prevY = data.prevY;
+  square.x = data.x;
+  square.y = data.y;
+  square.destX = data.destX;
+  square.destY = data.destY;
+  square.alpha = 0;
 }
 
 const update = (data) => { //Updates square/ship data
@@ -320,6 +347,7 @@ const init = () => { //Initializes client
     socket.on('setWorld', setWorld);
 	socket.on('setStars', setStars);
     socket.on('setPowerUps', setPowerUps);
+    socket.on('respawn', respawn);
     socket.on('updatedHP', updateHP);
 	socket.on('updatedMovement', update);
     socket.on('powerUp', powerUp);	

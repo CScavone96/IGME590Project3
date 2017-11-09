@@ -61,7 +61,7 @@ const checkCollision = (ship, bullet) => { // handles with collisions between sh
     const newShip = ship;
     delete bullets[bullet.count];
     newShip.hp--;
-    const data = { ship: newShip, bullet: bullet };
+    const data = { ship: newShip, bullet };
     io.sockets.in('room1').emit('bulletHit', data);
     return true;
   }
@@ -187,8 +187,8 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     canShoot: true,
     hp: 3,
   };
-  socket.square.x = Math.floor((Math.random() * 3546) - 1532);
-  socket.square.y = Math.floor((Math.random() * 1980) - 862);
+  // socket.square.x = Math.floor((Math.random() * 3546) - 1532);
+  // socket.square.y = Math.floor((Math.random() * 1980) - 862);
   socket.square.destX = socket.square.x;
   socket.square.destY = socket.square.y;
   ships[socket.hash] = socket.square;
@@ -203,16 +203,18 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     }
     if (socket.square.hp === 0) {
       socket.square.hp = -1;
+    }
+    if (socket.square.hp < -120) {
       socket.square.x = Math.floor((Math.random() * 3546) - 1532);
       socket.square.y = Math.floor((Math.random() * 1980) - 862);
       socket.square.destX = socket.square.x;
       socket.square.destY = socket.square.y;
       socket.square.prevX = socket.square.x;
       socket.square.prevY = socket.square.y;
-    }
-    if (socket.square.hp < -120) {
+      io.sockets.in('room1').emit('respawn', socket.square);
       socket.square.hp = 3;
     }
+    console.log(socket.square.hp);
     io.sockets.in('room1').emit('updatedHP', socket.square);
     ships[socket.hash] = socket.square;
     socket.square.lastUpdate = new Date().getTime();
