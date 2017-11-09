@@ -197,7 +197,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
   socket.emit('setPowerUps', powerUps);
   socket.emit('setWorld', world);
   socket.on('movementUpdate', (data) => { // Updates health and location of ships
-    socket.square = data;   
+    socket.square = data;
     socket.square.lastUpdate = new Date().getTime();
     if (socket.square.hp < 0 && socket.square.hp > -60) {
       socket.square.hp--;
@@ -211,7 +211,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.destY = socket.square.y;
       io.sockets.in('room1').emit('respawn', socket.square);
     }
-    if (socket.square.hp == -60) {
+    if (socket.square.hp === -60) {
       socket.square.hp = 3;
       socket.square.lastUpdate = new Date().getTime();
       io.sockets.in('room1').emit('updatedHP', socket.square);
