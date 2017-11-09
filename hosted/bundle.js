@@ -133,7 +133,7 @@ const newBullet = (data) => { //Handles a new bullet
 }
 
 const bulletHit = (data) => { //Handles a bullet collision
-    squares[data.ship.hash].hp = data.ship.hp;
+    squares[data.newShip.hash].hp = data.ship.hp;
     delete bullets[data.bullet.count];
 }
 
