@@ -55,10 +55,10 @@ const respawn = (data) => { //Sets the players position for respawns
   square.lastUpdate = data.lastUpdate;
   //square.prevX = data.prevX;
   //square.prevY = data.prevY;
-  //square.x = data.x;
-  //square.y = data.y;
-  square.destX = data.destX;
-  square.destY = data.destY;
+  square.x = data.x;
+  square.y = data.y;
+  //square.destX = data.destX;
+  //square.destY = data.destY;
   square.alpha = 0;
 }
 
