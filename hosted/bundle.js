@@ -40,6 +40,7 @@ const updateHP = (data) => {
   //square.destY = data.destY;
   //square.alpha = 0;
   square.hp = data.hp;
+  console.log(square.hp);
 }
 
 
