@@ -89,7 +89,7 @@ const update = (data) => { //Updates square/ship data
   square.bulletSpeed = data.bulletSpeed;
   square.shoot = data.shoot;
   square.canShoot = data.canShoot;
-  square.hp = data.hp;
+  //square.hp = data.hp;
 };
 
 const removeUser = (hash) => { //Removes a user from the 
