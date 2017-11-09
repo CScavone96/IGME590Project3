@@ -20,6 +20,20 @@ const modifyFocus = (foc) => //Changes focus var
     userFocus = foc;
 }
 
+const updateHP = (data) => {
+   if(!squares[data.hash]) {
+	squares[data.hash] = data;
+	return;
+  }
+  
+  const square = squares[data.hash]; 
+  
+  if(squares[data.hash].lastUpdate >= data.lastUpdate) {
+	return;
+  }
+  square.hp = data.hp;
+}
+
 const update = (data) => { //Updates square/ship data
   if(!squares[data.hash]) {
 	squares[data.hash] = data;
@@ -48,7 +62,7 @@ const update = (data) => { //Updates square/ship data
   square.bulletSpeed = data.bulletSpeed;
   square.shoot = data.shoot;
   square.canShoot = data.canShoot;
-  square.hp = data.hp;
+  //square.hp = data.hp;
 };
 
 const removeUser = (hash) => { //Removes a user from the 
@@ -306,6 +320,7 @@ const init = () => { //Initializes client
     socket.on('setWorld', setWorld);
 	socket.on('setStars', setStars);
     socket.on('setPowerUps', setPowerUps);
+    socket.on('updatedHP', updateHP);
 	socket.on('updatedMovement', update);
     socket.on('powerUp', powerUp);	
     socket.on('newBullet', newBullet);   		
