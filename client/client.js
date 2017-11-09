@@ -28,10 +28,10 @@ const updateHP = (data) => {
   
   const square = squares[data.hash]; 
   
-  /*if(squares[data.hash].lastUpdate >= data.lastUpdate) {
+  if(squares[data.hash].lastUpdate >= data.lastUpdate) {
 	return;
   } 
-  square.lastUpdate = data.lastUpdate;*/
+  square.lastUpdate = data.lastUpdate;
   //square.prevX = data.prevX;
   //square.prevY = data.prevY;
   //square.x = data.x;
