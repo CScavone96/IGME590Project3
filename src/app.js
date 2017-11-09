@@ -215,8 +215,9 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.prevX = socket.square.x;
       socket.square.prevY = socket.square.y;
       socket.square.lastUpdate = new Date().getTime();
-      io.sockets.in('room1').emit('respawn', socket.square);
       socket.square.hp = 3;
+      io.sockets.in('room1').emit('updatedHP', socket.square);
+      io.sockets.in('room1').emit('respawn', socket.square);
     }
     console.log(socket.square.hp);
     socket.square.lastUpdate = new Date().getTime();
