@@ -200,11 +200,11 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     socket.square = data;   
     if (socket.square.hp < 0) {
       socket.square.hp--;
-      io.sockets.in('room1').emit('updatedHP', socket.square);
+      //io.sockets.in('room1').emit('updatedHP', socket.square);
     }
     if (socket.square.hp === 0) {
       socket.square.hp = -1;
-      io.sockets.in('room1').emit('updatedHP', socket.square);
+      //io.sockets.in('room1').emit('updatedHP', socket.square);
     }
     if (socket.square.hp < -120) {
       socket.square.x = Math.floor((Math.random() * 3546) - 1532);
