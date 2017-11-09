@@ -187,8 +187,8 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     canShoot: true,
     hp: 3,
   };
-  // socket.square.x = Math.floor((Math.random() * 3546) - 1532);
-  // socket.square.y = Math.floor((Math.random() * 1980) - 862);
+  socket.square.x = Math.floor((Math.random() * 3546) - 1532);
+  socket.square.y = Math.floor((Math.random() * 1980) - 862);
   socket.square.destX = socket.square.x;
   socket.square.destY = socket.square.y;
   ships[socket.hash] = socket.square;
@@ -209,8 +209,6 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.y = Math.floor((Math.random() * 1980) - 862);
       socket.square.destX = socket.square.x;
       socket.square.destY = socket.square.y;
-      //socket.square.prevX = socket.square.x;
-      //socket.square.prevY = socket.square.y;
       io.sockets.in('room1').emit('respawn', socket.square);
     }
     if (socket.square.hp == -60) {
@@ -221,10 +219,8 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     console.log(socket.square.hp);
     socket.square.lastUpdate = new Date().getTime();
     ships[socket.hash] = socket.square;
-    // io.sockets.in('room1').emit('updatedMovement', socket.square);
     socket.square.lastUpdate = new Date().getTime();
     socket.broadcast.to('room1').emit('updatedMovement', socket.square);
-    // io.sockets.in('room1').emit('updatedMovement', socket.square);
   });
 
   socket.on('shoot', (data) => { // Handles shooting from socket

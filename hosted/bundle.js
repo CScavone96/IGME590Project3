@@ -32,13 +32,6 @@ const updateHP = (data) => {
 	return;
   } 
   square.lastUpdate = data.lastUpdate;
-  //square.prevX = data.prevX;
-  //square.prevY = data.prevY;
-  //square.x = data.x;
-  //square.y = data.y;
-  //square.destX = data.destX;
-  //square.destY = data.destY;
-  //square.alpha = 0;
   square.hp = data.hp;
 }
 
@@ -52,8 +45,6 @@ const respawn = (data) => { //Sets the players position for respawns
   const square = squares[data.hash]; 
   
   square.lastUpdate = data.lastUpdate;
-  //square.prevX = data.prevX;
-  //square.prevY = data.prevY;
   square.x = data.x;
   square.y = data.y;
   square.destX = data.destX;
@@ -107,12 +98,10 @@ const setUser = (data) => {
 };
 
 const setWorld = (data) => { //Sets world data from server
-    //console.log(data);
     world = data;
 };
 
 const setStars = (data) => { //Sets stars from server
-    //console.log(data);
     stars = data;
 };
 
@@ -181,7 +170,6 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
   let playerSquare = squares[hash];
   var camX = clamp(-playerSquare.x + canvas.width/2 - playerSquare.width/2, -world.width/2, world.width/2 - canvas.width);
   var camY = clamp(-playerSquare.y + canvas.height/2 - playerSquare.height/2, -world.height/2, world.height/2 - canvas.height);
-  //console.log(camX);
   ctx.translate( camX, camY );  
   
   for(let i = 0; i < stars.length; i++) {
@@ -208,16 +196,11 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
 	if(square.alpha < 1) square.alpha += 0.05;
 
 	if(square.hash === hash) {
-	  //ctx.filter = "none"
       playerDraw = true;
-	}
-	else {
-	  //ctx.filter = "hue-rotate(40deg)";
 	}
     
 	square.x = lerp(square.prevX, square.destX, square.alpha);
 	square.y = lerp(square.prevY, square.destY, square.alpha);
-    //console.log(square.x);
     if(playerDraw){
         playerDraw = false;
     }
@@ -230,12 +213,8 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
             ctx.fillText(square.hp, square.x+ square.width/2, square.y + 50);
             ctx.filter = "hue-rotate(40deg)";
             ctx.fillStyle="#00ffff";
-            //console.log(square.dir);       
             drawRotated((square.dir)*(360/8), square);        
-            //ctx.drawImage(spaceShip, square.x, square.y, square.width, square.height);
-            //ctx.fillRect(square.x, square.y, square.width, square.height);
             ctx.strokeStyle="#ff00ff";
-            //ctx.strokeRect(square.x, square.y, square.width, square.height);
         }
     }
   }
@@ -256,15 +235,12 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
       ctx.fillStyle="#00ffff";
       drawRotated((playerSquare.dir)*(360/8), playerSquare);
       ctx.strokeStyle="#ff00ff";
-      //ctx.strokeRect(playerSquare.x, playerSquare.y, playerSquare.width, playerSquare.height);  
     }
     requestAnimationFrame(redraw);
 };
 
 const drawRotated = (degrees, square) => { //Draws an image rotated
-    //ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.save();
-    //ctx.translate(canvas.width/2,canvas.height/2);
     let squareWidth = square.width*1//.25;
     let squareHeight = square.height*1//.25;
     ctx.translate(square.x+squareWidth/2, square.y+squareHeight/2 );
