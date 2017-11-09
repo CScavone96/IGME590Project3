@@ -61,7 +61,7 @@ const checkCollision = (ship, bullet) => { // handles with collisions between sh
     const newShip = ship;
     delete bullets[bullet.count];
     newShip.hp--;
-    const data = { newShip, bullet };
+    const data = { ship: newSHip, bullet: bullet };
     io.sockets.in('room1').emit('bulletHit', data);
     return true;
   }
