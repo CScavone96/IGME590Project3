@@ -213,7 +213,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       //socket.square.prevY = socket.square.y;
       io.sockets.in('room1').emit('respawn', socket.square);
     }
-    if (socket.square.hp < -80) {
+    if (socket.square.hp == -80) {
       socket.square.hp = 3;
       socket.square.lastUpdate = new Date().getTime();
       io.sockets.in('room1').emit('updatedHP', socket.square);
