@@ -37,20 +37,31 @@ const io = socketio(app);
 app.listen(PORT);
 
 const stars = [];
+const powerUps = [];
 const ships = {};
 const world = { width: 5120, height: 2880 };
 const bullets = {};
 
 let bulletCount = 0;
 
+const checkColl = (square1, square2) => { // returns collisions between squares
+  if (square1.x < square2.x + square2.width &&
+    square1.x + square1.width > square2.x &&
+    square1.y < square2.y + square2.height &&
+    square1.height + square1.y > square2.y) {
+    return true;
+  }
 
-const checkCollision = (ship, bullet) => {
-  if (ship.x < bullet.x + bullet.width &&
-    ship.x + ship.width > bullet.x &&
-    ship.y < bullet.y + bullet.height &&
-    ship.height + ship.y > bullet.y) {
+  return false;
+};
+
+
+const checkCollision = (ship, bullet) => { // handles with collisions between ships and bullets
+  if (checkColl(ship, bullet)) {
+    const newShip = ship;
     delete bullets[bullet.count];
-    const data = { ship, bullet };
+    newShip.hp--;
+    const data = { newShip, bullet };
     io.sockets.in('room1').emit('bulletHit', data);
     return true;
   }
@@ -58,17 +69,30 @@ const checkCollision = (ship, bullet) => {
   return false;
 };
 
-const createStars = (starCount) => {
+const createStars = (starCount) => { // Creates stars 
   for (let i = 0; i < starCount; i++) {
     const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
     const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
-    stars[i] = { x: xPos, y: yPos };
+    const s = Math.floor((Math.random() * 8) + 4);
+    stars[i] = { x: xPos, y: yPos, size: s };
   }
 };
 
-createStars(3000);
+createStars(3500);
 
-const checkBullets = () => {
+
+const createPowerUps = (starCount) => { // Creates power ups 
+  for (let i = 0; i < starCount; i++) {
+    const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
+    const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
+    const t = Math.floor((Math.random() * 1) + 1);
+    powerUps[i] = { x: xPos, y: yPos, height: 16, width: 16, type: t };
+  }
+};
+
+createPowerUps(35);
+
+const checkBullets = () => { // Manages collisions and distribution for powerups
   const bullKeys = Object.keys(bullets);
   const shipKeys = Object.keys(ships);
   for (let i = 0; i < bullKeys.length; i++) {
@@ -96,10 +120,10 @@ const checkBullets = () => {
         bullet.x -= bullet.speed;
         bullet.y -= bullet.speed;
       }
-      // io.sockets.in('room1').emit('bulletUpdate', bullet);
       for (let k = 0; k < shipKeys.length; k++) {
         const ship = ships[shipKeys[k]];
         if (ship.hash !== bullet.creator) {
+          console.log(`${ship.hash} ${bullet.creator}`);
           checkCollision(ship, bullet);
         }
       }
@@ -111,7 +135,30 @@ const checkBullets = () => {
   io.sockets.in('room1').emit('bulletUpdate', bullets);
 };
 
-io.on('connection', (sock) => {
+const checkPowerUps = () => { // Manages collisions and distribution for powerups
+  const shipKeys = Object.keys(ships);
+  for (let i = 0; i < powerUps.length; i++) {
+    const powerUp = powerUps[i];
+    if (typeof powerUp !== 'undefined') {
+      for (let k = 0; k < shipKeys.length; k++) {
+        const ship = ships[shipKeys[k]];
+        if (checkColl(ship, powerUp)) {
+          const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
+          const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
+          powerUps[i].x = xPos;
+          powerUps[i].y = yPos;
+          const data = { ship, powerUp };
+          io.sockets.in('room1').emit('powerUp', data);
+          io.sockets.in('room1').emit('setPowerUps', powerUps);
+          console.log('powerup!!');
+        }
+      }
+    }
+  }
+};
+
+
+io.on('connection', (sock) => { // Handles setting up socket connection
   const socket = sock;
 
 
@@ -134,36 +181,54 @@ io.on('connection', (sock) => {
     moveDown: false,
     moveUp: false,
     dir: 0,
-    speed: 4,
+    speed: 3,
     bulletSpeed: 5,
     shoot: false,
     canShoot: true,
+    hp: 3,
   };
-  // socket.square.x = Math.floor((Math.random() * 3546) - 1532);
-  // socket.square.y = Math.floor((Math.random() * 1980) - 862);
+  socket.square.x = Math.floor((Math.random() * 3546) - 1532);
+  socket.square.y = Math.floor((Math.random() * 1980) - 862);
   socket.square.destX = socket.square.x;
   socket.square.destY = socket.square.y;
   ships[socket.hash] = socket.square;
   socket.emit('joined', socket.square);
   socket.emit('setStars', stars);
+  socket.emit('setPowerUps', powerUps);
   socket.emit('setWorld', world);
-  socket.on('movementUpdate', (data) => {
+  socket.on('movementUpdate', (data) => { // Updates health and location of ships
     socket.square = data;
+    if (socket.square.hp < 0) {
+      socket.square.hp--;
+    }
+    if (socket.square.hp === 0) {
+      socket.square.hp = -1;
+      socket.square.x = Math.floor((Math.random() * 3546) - 1532);
+      socket.square.y = Math.floor((Math.random() * 1980) - 862);
+      socket.square.destX = socket.square.x;
+      socket.square.destY = socket.square.y;
+      socket.square.prevX = socket.square.x;
+      socket.square.prevY = socket.square.y;
+    }
+    if (socket.square.hp < -120) {
+      socket.square.hp = 3;
+    }
     ships[socket.hash] = socket.square;
     socket.square.lastUpdate = new Date().getTime();
     // io.sockets.in('room1').emit('updatedMovement', socket.square);
-    socket.broadcast.to('room1').emit('updatedMovement', socket.square);
+    // socket.broadcast.to('room1').emit('updatedMovement', socket.square);
+    io.sockets.in('room1').emit('updatedMovement', socket.square);
   });
 
-  socket.on('shoot', (data) => {
+  socket.on('shoot', (data) => { // Handles shooting from socket
     bullets[bulletCount] = {
       x: data.x + (data.width / 2),
       y: data.y + (data.height / 2),
       dir: data.dir,
       speed: data.bulletSpeed,
       count: bulletCount,
-      height: 7,
-      width: 7,
+      height: 10,
+      width: 10,
       creator: data.hash,
       life: 180 };
 
@@ -171,7 +236,7 @@ io.on('connection', (sock) => {
     bulletCount++;
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', () => { // Handles socket disconnecting
     io.sockets.in('room1').emit('left', socket.square.hash);
     socket.leave('room1');
   });
@@ -180,3 +245,4 @@ io.on('connection', (sock) => {
 console.log(`listening on port ${PORT}`);
 
 setInterval(checkBullets, 10);
+setInterval(checkPowerUps, 10);

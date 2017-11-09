@@ -7,6 +7,7 @@ var socket = void 0;
 var hash = void 0;
 let userFocus = true;
 let stars = [];
+let powerUps = [];
 let world = {};
 let bullets={};
 let keyState = {};
@@ -19,7 +20,7 @@ const modifyFocus = (foc) => //Changes focus var
     userFocus = foc;
 }
 
-const update = (data) => {
+const update = (data) => { //Updates square/ship data
   if(!squares[data.hash]) {
 	squares[data.hash] = data;
 	return;
@@ -43,9 +44,14 @@ const update = (data) => {
   square.moveLeft = data.moveLeft;
   square.moveRight = data.moveRight;
   square.dir = data.dir;
+  square.speed = data.speed;
+  square.bulletSpeed = data.bulletSpeed;
+  square.shoot = data.shoot;
+  square.canShoot = data.canShoot;
+  square.hp = data.hp;
 };
 
-const removeUser = (hash) => {
+const removeUser = (hash) => { //Removes a user from the 
   if(squares[hash]) {
 	delete squares[hash];
   }
@@ -58,21 +64,26 @@ const setUser = (data) => {
   requestAnimationFrame(redraw);
 };
 
-const setWorld = (data) => {
+const setWorld = (data) => { //Sets world data from server
     //console.log(data);
     world = data;
 };
 
-const setStars = (data) => {
+const setStars = (data) => { //Sets stars from server
     //console.log(data);
     stars = data;
 };
 
-const lerp = (v0, v1, alpha) => {
+const setPowerUps = (data) => { //Sets powerups from server
+    powerUps = data;
+};
+
+
+const lerp = (v0, v1, alpha) => { //Linear interpolation
   return (1 - alpha) * v0 + alpha * v1;
 };
 
-const updatePosition = () => {
+const updatePosition = () => { //Updates positions
   const square = squares[hash];
 
   square.prevX = square.x;
@@ -93,26 +104,31 @@ const updatePosition = () => {
   socket.emit('movementUpdate', square);
 };
 
-const clamp = (value, min, max) => {
+const clamp = (value, min, max) => { //Clamp two values
     if(value < min) return min;
     else if(value > max) return max;
     return value;
 }
 
-const newBullet = (data) => {
+const powerUp = (data) => { //Handles power up collision
+    squares[data.ship.hash].hp++;
+}
+
+const newBullet = (data) => { //Handles a new bullet
   bullets[data.count] = data;
 }
 
-const bulletHit = (data) => {
+const bulletHit = (data) => { //Handles a bullet collision
+    squares[data.ship.hash].hp = data.ship.hp;
     delete bullets[data.bullet.count];
 }
 
-const bulletUpdate = (data) => {
+const bulletUpdate = (data) => { //Updates bullets collection
     bullets = data;
 }
 
 
-const redraw = (time) => {
+const redraw = (time) => { //Draws the game to the canvas and requests animation frames
   updatePosition();
   ctx.setTransform(1,0,0,1,0,0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -129,9 +145,19 @@ const redraw = (time) => {
   for(let i = 0; i < stars.length; i++) {
     if(Math.hypot(playerSquare.x-stars[i].x, playerSquare.y-stars[i].y) < canvas.width){
         ctx.fillStyle="#ffffff";
-        ctx.fillRect(stars[i].x, stars[i].y, 10, 10);  
+        ctx.fillRect(stars[i].x, stars[i].y, stars[i].size, stars[i].size);  
     }  
   }      
+  
+  for(let i = 0; i < powerUps.length; i++) {
+    if(Math.hypot(playerSquare.x-powerUps[i].x, playerSquare.y-powerUps[i].y) < canvas.width){
+        ctx.fillStyle="#55d661";
+        ctx.beginPath();
+        ctx.arc(powerUps[i].x, powerUps[i].y,8,0,2*Math.PI);
+        ctx.fill();
+    }  
+  }      
+  
   const keys = Object.keys(squares);
   for(let i = 0; i < keys.length; i++) {
 
@@ -154,64 +180,46 @@ const redraw = (time) => {
         playerDraw = false;
     }
     else{
-        ctx.filter = "hue-rotate(40deg)";
-        ctx.fillStyle="#00ffff";
-        //console.log(square.dir);       
-        drawRotated((square.dir)*(360/8), square);        
-        //ctx.drawImage(spaceShip, square.x, square.y, square.width, square.height);
-        //ctx.fillRect(square.x, square.y, square.width, square.height);
-        ctx.strokeStyle="#ff00ff";
-        ctx.strokeRect(square.x, square.y, square.width, square.height);
+        if(square.hp > 0)
+        {
+            ctx.font = '10px Verdana';
+            ctx.textAlign="center";
+            ctx.fillStyle="#00ffff";
+            ctx.fillText(square.hp, square.x+ square.width/2, square.y + 50);
+            ctx.filter = "hue-rotate(40deg)";
+            ctx.fillStyle="#00ffff";
+            //console.log(square.dir);       
+            drawRotated((square.dir)*(360/8), square);        
+            //ctx.drawImage(spaceShip, square.x, square.y, square.width, square.height);
+            //ctx.fillRect(square.x, square.y, square.width, square.height);
+            ctx.strokeStyle="#ff00ff";
+            ctx.strokeRect(square.x, square.y, square.width, square.height);
+        }
     }
   }
   
   const bulls = Object.keys(bullets);
   for(let i = 0; i < bulls.length; i++) {
 	let bullet = bullets[bulls[i]];
-    //console.log(bullets);
-    /*if(bullet.dir == 0){
-    bullet.y -= bullet.speed;
-    }    
-    else if(bullet.dir == 1){
-    bullet.x += bullet.speed;
-    bullet.y -= bullet.speed;
-    }
-    else if(bullet.dir == 2){
-    bullet.x += bullet.speed;
-    }
-    else if(bullet.dir == 3){
-    bullet.x += bullet.speed;
-    bullet.y += bullet.speed;
-    }
-    else if(bullet.dir == 4){
-    bullet.y += bullet.speed;
-    }
-    else if(bullet.dir == 5){
-    bullet.y += bullet.speed;
-    bullet.x -= bullet.speed;
-    }
-    else if(bullet.dir == 6){
-    bullet.x -= bullet.speed;
-    }
-    else if(bullet.dir == 7){
-    bullet.x -= bullet.speed;
-    bullet.y -= bullet.speed;
-    }*/
-    ctx.fillStyle="#00ffff";
-    ctx.fillRect(bullet.x, bullet.y, 7, 7);  
+    ctx.fillStyle="#ff0000";
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);  
   }
-  
-  ctx.filter = "none"
-  ctx.fillStyle="#00ffff";
-  //console.log(playerSquare.dir);
-  drawRotated((playerSquare.dir)*(360/8), playerSquare);
-  //ctx.drawImage(spaceShip, playerSquare.x, playerSquare.y, playerSquare.width, playerSquare.height);
-  ctx.strokeStyle="#ff00ff";
-  ctx.strokeRect(playerSquare.x, playerSquare.y, playerSquare.width, playerSquare.height);  
-  requestAnimationFrame(redraw);
+   if(playerSquare.hp > 0)
+    {
+      ctx.filter = "none"
+      ctx.font = '10px Verdana';
+      ctx.textAlign="center";
+      ctx.fillStyle="#ff00ff";
+      ctx.fillText(playerSquare.hp, playerSquare.x + playerSquare.width/2, playerSquare.y + 50);
+      ctx.fillStyle="#00ffff";
+      drawRotated((playerSquare.dir)*(360/8), playerSquare);
+      ctx.strokeStyle="#ff00ff";
+      ctx.strokeRect(playerSquare.x, playerSquare.y, playerSquare.width, playerSquare.height);  
+    }
+    requestAnimationFrame(redraw);
 };
 
-const drawRotated = (degrees, square) => { 
+const drawRotated = (degrees, square) => { //Draws an image rotated
     //ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.save();
     //ctx.translate(canvas.width/2,canvas.height/2);
@@ -223,66 +231,69 @@ const drawRotated = (degrees, square) => {
     ctx.restore();
 }
 
-const keyHandler = () => {
+const keyHandler = () => { //Handles keys for movement shooting
 	const square = squares[hash];
-	if(keyState[65] || keyState[37]) {
-	  square.moveLeft = true;
-      square.dir = 6;
-	}
-    else{
-      square.moveLeft = false;
-    }
-	if(keyState[68] || keyState[39]) {
-	  square.moveRight = true;
-      square.dir = 2;
-	}
-    else{
-      square.moveRight = false;
-    }
-    if(keyState[87] || keyState[38]) {
-	  square.moveUp = true;
-      if(square.moveRight){
-          square.dir = 1;
-      }
-      else if(square.moveLeft){
-          square.dir = 7;
-      }
-      else{
-          square.dir = 0;  
-      }
-	}
-    else{
-      square.moveUp = false;
-    }
-    if(keyState[83] || keyState[40]) {
-	  square.moveDown = true;
-      if(square.moveRight){
-          square.dir = 3;
-      }
-      else if(square.moveLeft){
-          square.dir = 5;
-      }
-      else{
-          square.dir = 4;
-      }
-	}
-    else{
-      square.moveDown = false;
-    }
-    if(keyState[32]){
-      square.shoot = true;
-      if(square.canShoot){
-        socket.emit('shoot', square);
-        square.canShoot = false;
-      }
-    }
-    else{
-      square.shoot = false;
-      square.canShoot = true;
+    if(square.hp > 0)
+    {
+        if(keyState[65] || keyState[37]) {
+          square.moveLeft = true;
+          square.dir = 6;
+        }
+        else{
+          square.moveLeft = false;
+        }
+        if(keyState[68] || keyState[39]) {
+          square.moveRight = true;
+          square.dir = 2;
+        }
+        else{
+          square.moveRight = false;
+        }
+        if(keyState[87] || keyState[38]) {
+          square.moveUp = true;
+          if(square.moveRight){
+              square.dir = 1;
+          }
+          else if(square.moveLeft){
+              square.dir = 7;
+          }
+          else{
+              square.dir = 0;  
+          }
+        }
+        else{
+          square.moveUp = false;
+        }
+        if(keyState[83] || keyState[40]) {
+          square.moveDown = true;
+          if(square.moveRight){
+              square.dir = 3;
+          }
+          else if(square.moveLeft){
+              square.dir = 5;
+          }
+          else{
+              square.dir = 4;
+          }
+        }
+        else{
+          square.moveDown = false;
+        }
+        if(keyState[32]){
+          square.shoot = true;
+          if(square.canShoot){
+            socket.emit('shoot', square);
+            square.canShoot = false;
+          }
+        }
+        else{
+          square.shoot = false;
+          square.canShoot = true;
+        }
     }
 };
 
-const init = () => {
+const init = () => { //Initializes client
     spaceShip = document.querySelector('#spaceShip');
 	canvas = document.querySelector('#canvas');
 	ctx = canvas.getContext('2d');
@@ -294,9 +305,9 @@ const init = () => {
 	socket.on('joined', setUser);
     socket.on('setWorld', setWorld);
 	socket.on('setStars', setStars);
-
+    socket.on('setPowerUps', setPowerUps);
 	socket.on('updatedMovement', update);
-		
+    socket.on('powerUp', powerUp);	
     socket.on('newBullet', newBullet);   		
     socket.on('bulletHit', bulletHit);
     socket.on('bulletUpdate', bulletUpdate);
