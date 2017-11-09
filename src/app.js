@@ -207,7 +207,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.hp = -1;
       io.sockets.in('room1').emit('updatedHP', socket.square);
     }
-    if (socket.square.hp < -120) {
+    if (socket.square.hp < -80) {
       socket.square.x = Math.floor((Math.random() * 3546) - 1532);
       socket.square.y = Math.floor((Math.random() * 1980) - 862);
       socket.square.destX = socket.square.x;
