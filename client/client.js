@@ -53,10 +53,10 @@ const respawn = (data) => { //Sets the players position for respawns
   const square = squares[data.hash]; 
   
   square.lastUpdate = data.lastUpdate;
-  square.prevX = data.prevX;
-  square.prevY = data.prevY;
-  square.x = data.x;
-  square.y = data.y;
+  //square.prevX = data.prevX;
+  //square.prevY = data.prevY;
+  //square.x = data.x;
+  //square.y = data.y;
   square.destX = data.destX;
   square.destY = data.destY;
   square.alpha = 0;
