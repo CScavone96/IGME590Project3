@@ -216,8 +216,8 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     ships[socket.hash] = socket.square;
     socket.square.lastUpdate = new Date().getTime();
     // io.sockets.in('room1').emit('updatedMovement', socket.square);
-    // socket.broadcast.to('room1').emit('updatedMovement', socket.square);
-    io.sockets.in('room1').emit('updatedMovement', socket.square);
+    socket.broadcast.to('room1').emit('updatedMovement', socket.square);
+    //io.sockets.in('room1').emit('updatedMovement', socket.square);
   });
 
   socket.on('shoot', (data) => { // Handles shooting from socket
