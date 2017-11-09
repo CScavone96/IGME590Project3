@@ -212,7 +212,6 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       //socket.square.prevX = socket.square.x;
       //socket.square.prevY = socket.square.y;
       io.sockets.in('room1').emit('respawn', socket.square);
-      io.sockets.in('room1').emit('updatedHP', socket.square);
     }
     if (socket.square.hp < -80) {
       socket.square.hp = 3;
