@@ -61,6 +61,7 @@ const respawn = (data) => { //Sets the players position for respawns
   square.destX = data.destX;
   square.destY = data.destY;
   square.alpha = 0;
+  square.hp = data.hp;
   console.log(square.hp );
 }
 
