@@ -197,8 +197,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
   socket.emit('setPowerUps', powerUps);
   socket.emit('setWorld', world);
   socket.on('movementUpdate', (data) => { // Updates health and location of ships
-    socket.square = data;
-    socket.square.lastUpdate = new Date().getTime();
+    socket.square = data;   
     if (socket.square.hp < 0) {
       socket.square.hp--;
     }
@@ -212,13 +211,16 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.destY = socket.square.y;
       socket.square.prevX = socket.square.x;
       socket.square.prevY = socket.square.y;
+      socket.square.lastUpdate = new Date().getTime();
       io.sockets.in('room1').emit('respawn', socket.square);
       socket.square.hp = 3;
     }
     console.log(socket.square.hp);
+    socket.square.lastUpdate = new Date().getTime();
     io.sockets.in('room1').emit('updatedHP', socket.square);
     ships[socket.hash] = socket.square;
     // io.sockets.in('room1').emit('updatedMovement', socket.square);
+    socket.square.lastUpdate = new Date().getTime();
     socket.broadcast.to('room1').emit('updatedMovement', socket.square);
     // io.sockets.in('room1').emit('updatedMovement', socket.square);
   });
