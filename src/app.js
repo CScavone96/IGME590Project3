@@ -215,7 +215,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.hp = 3;
     }
     console.log(socket.square.hp);
-    io.sockets.in('room1').emit('updatedHP', socket.square);
+    socket.broadcast.to('room1').emit('updatedHP', socket.square);
     ships[socket.hash] = socket.square;
     socket.square.lastUpdate = new Date().getTime();
     // io.sockets.in('room1').emit('updatedMovement', socket.square);
