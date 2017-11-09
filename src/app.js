@@ -199,7 +199,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
   socket.on('movementUpdate', (data) => { // Updates health and location of ships
     socket.square = data;   
     socket.square.lastUpdate = new Date().getTime();
-    if (socket.square.hp < 0) {
+    if (socket.square.hp < 0 > -80)) {
       socket.square.hp--;
       io.sockets.in('room1').emit('updatedHP', socket.square);
     }
