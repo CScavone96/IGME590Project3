@@ -207,8 +207,8 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.hp = -1;
       socket.square.x = Math.floor((Math.random() * 3546) - 1532);
       socket.square.y = Math.floor((Math.random() * 1980) - 862);
-      //socket.square.destX = socket.square.x;
-      //socket.square.destY = socket.square.y;
+      socket.square.destX = socket.square.x;
+      socket.square.destY = socket.square.y;
       //socket.square.prevX = socket.square.x;
       //socket.square.prevY = socket.square.y;
       io.sockets.in('room1').emit('respawn', socket.square);
@@ -216,6 +216,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     }
     if (socket.square.hp < -80) {
       socket.square.hp = 3;
+      socket.square.lastUpdate = new Date().getTime();
       io.sockets.in('room1').emit('updatedHP', socket.square);
     }
     console.log(socket.square.hp);

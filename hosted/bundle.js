@@ -57,8 +57,8 @@ const respawn = (data) => { //Sets the players position for respawns
   //square.prevY = data.prevY;
   square.x = data.x;
   square.y = data.y;
-  //square.destX = data.destX;
-  //square.destY = data.destY;
+  square.destX = data.destX;
+  square.destY = data.destY;
   square.alpha = 0;
 }
 
