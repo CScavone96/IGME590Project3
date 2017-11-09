@@ -45,6 +45,7 @@ const updateHP = (data) => {
 
 
 const respawn = (data) => { //Sets the players position for respawns
+   console.log("RESPWAN");
    if(!squares[data.hash]) {
 	squares[data.hash] = data;
 	return;
@@ -60,6 +61,7 @@ const respawn = (data) => { //Sets the players position for respawns
   square.destX = data.destX;
   square.destY = data.destY;
   square.alpha = 0;
+  console.log(square.hp );
 }
 
 const update = (data) => { //Updates square/ship data
