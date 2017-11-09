@@ -238,7 +238,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
             //ctx.drawImage(spaceShip, square.x, square.y, square.width, square.height);
             //ctx.fillRect(square.x, square.y, square.width, square.height);
             ctx.strokeStyle="#ff00ff";
-            ctx.strokeRect(square.x, square.y, square.width, square.height);
+            //ctx.strokeRect(square.x, square.y, square.width, square.height);
         }
     }
   }
@@ -259,7 +259,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
       ctx.fillStyle="#00ffff";
       drawRotated((playerSquare.dir)*(360/8), playerSquare);
       ctx.strokeStyle="#ff00ff";
-      ctx.strokeRect(playerSquare.x, playerSquare.y, playerSquare.width, playerSquare.height);  
+      //ctx.strokeRect(playerSquare.x, playerSquare.y, playerSquare.width, playerSquare.height);  
     }
     requestAnimationFrame(redraw);
 };
