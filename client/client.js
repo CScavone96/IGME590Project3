@@ -12,6 +12,10 @@ let world = {};
 let bullets={};
 let keyState = {};
 let spaceShip = null;
+let uiCanvas;
+let uictx;
+let displayScore = false;
+let canScore = false;
 window.addEventListener('keydown',function(e){ keyState[e.keyCode || e.which] = true; },true);    
 window.addEventListener('keyup',function(e){ keyState[e.keyCode || e.which] = false; },true);
 
@@ -187,7 +191,11 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
         ctx.fill();
     }  
   }      
-  
+  let showScoreboard = false;
+  if(displayScore){
+    showScoreboard = true; 
+  }
+  uictx.clearRect(0, 0, canvas.width, canvas.height);
   const keys = Object.keys(squares);
   for(let i = 0; i < keys.length; i++) {
 
@@ -199,6 +207,13 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
       playerDraw = true;
 	}
     
+    if(showScoreboard){
+      uictx.font = '16px Verdana';
+      uictx.textAlign="center";
+      uictx.fillStyle="#42a7f4";
+      uictx.fillText(square.name, 512, 50*(i+1));
+    }
+    
 	square.x = lerp(square.prevX, square.destX, square.alpha);
 	square.y = lerp(square.prevY, square.destY, square.alpha);
     if(playerDraw){
@@ -209,12 +224,11 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
         {
             ctx.font = '10px Verdana';
             ctx.textAlign="center";
-            ctx.fillStyle="#00ffff";
+            ctx.fillStyle="#f44245";
             ctx.fillText(square.hp, square.x+ square.width/2, square.y + 50);
             ctx.filter = "hue-rotate(40deg)";
-            ctx.fillStyle="#00ffff";
+            ctx.fillStyle="#f44245";
             drawRotated((square.dir)*(360/8), square);        
-            ctx.strokeStyle="#ff00ff";
         }
     }
   }
@@ -227,14 +241,23 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
   }
    if(playerSquare.hp > 0)
     {
+        
       ctx.filter = "none"
-      ctx.font = '10px Verdana';
-      ctx.textAlign="center";
-      ctx.fillStyle="#ff00ff";
-      ctx.fillText(playerSquare.hp, playerSquare.x + playerSquare.width/2, playerSquare.y + 50);
+      uictx.font = '16px Verdana';
+      uictx.textAlign="center";
+      uictx.fillStyle="#42a7f4";
+      ctx.fillStyle="#42a7f4";
+      //ctx.fillText(playerSquare.hp, playerSquare.x + playerSquare.width/2, playerSquare.y + 50);
+      uictx.fillText("HP: " + playerSquare.hp, 50, 50);
       ctx.fillStyle="#00ffff";
       drawRotated((playerSquare.dir)*(360/8), playerSquare);
-      ctx.strokeStyle="#ff00ff";
+    }
+    if(playerSquare.hp < 0)
+    {
+        ctx.font = '16px Verdana';
+        ctx.textAlign="center";
+        ctx.fillStyle="#42a7f4";
+        ctx.fillText("Respawning", playerSquare.x + playerSquare.width/2, playerSquare.y + 50);
     }
     requestAnimationFrame(redraw);
 };
@@ -251,6 +274,16 @@ const drawRotated = (degrees, square) => { //Draws an image rotated
 
 const keyHandler = () => { //Handles keys for movement shooting
 	const square = squares[hash];
+    if(keyState[84]){
+        if(canScore)
+        {
+        displayScore = !displayScore;
+        canScore = false;
+        }
+    }
+    else{
+        canScore = true;
+    }
     if(square.hp > 0)
     {
         if(keyState[65] || keyState[37]) {
@@ -314,7 +347,9 @@ const keyHandler = () => { //Handles keys for movement shooting
 const init = () => { //Initializes client
     spaceShip = document.querySelector('#spaceShip');
 	canvas = document.querySelector('#canvas');
+    uiCanvas = document.querySelector('#uiCanvas');
 	ctx = canvas.getContext('2d');
+    uictx = uiCanvas.getContext('2d');
     ctx.webkitImageSmoothingEnabled = false;
     ctx.mozImageSmoothingEnabled = false;
     ctx.imageSmoothingEnabled = false; 

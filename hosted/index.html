@@ -13,6 +13,28 @@
         margin-right: auto;
         display: block;
     }
+    uiCanvas {
+        position: absolute;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .wrapper {
+        position: relative;
+        width: 1024px;
+        height: 576px;
+        text-align:center;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+
+    .wrapper canvas {
+        position: absolute;
+        margin-left: auto;
+        margin-right: auto;
+    }
     h1 
     {
         text-align: center;
@@ -31,7 +53,10 @@
 </head>
 <body>
     <h1>Space Ships Online!</h1>
-    <canvas id="canvas" height="576" width="1024">No canvas</canvas>
+    <div class = "wrapper">
+        <canvas id="canvas" height="576" width="1024">No canvas</canvas>
+        <canvas id="uiCanvas" height="576" width="1024">No canvas</canvas>
+    </div>
     <img id="spaceShip" class="hidden" src="Spaceship.png" alt="spaceship sprite" />
 </body>
 </html>

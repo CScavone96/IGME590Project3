@@ -123,7 +123,7 @@ const checkBullets = () => { // Manages collisions and distribution for powerups
       for (let k = 0; k < shipKeys.length; k++) {
         const ship = ships[shipKeys[k]];
         if (ship.hash !== bullet.creator) {
-          console.log(`${ship.hash} ${bullet.creator}`);
+          // console.log(`${ship.hash} ${bullet.creator}`);
           checkCollision(ship, bullet);
         }
       }
@@ -150,7 +150,7 @@ const checkPowerUps = () => { // Manages collisions and distribution for powerup
           const data = { ship, powerUp };
           io.sockets.in('room1').emit('powerUp', data);
           io.sockets.in('room1').emit('setPowerUps', powerUps);
-          console.log('powerup!!');
+          // console.log('powerup!!');
         }
       }
     }
@@ -167,6 +167,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
   socket.square = {
     hash: xxh.h32(`${socket.id}${Date.now()}`, 0xB105F00D).toString(16),
     lastUpdate: new Date().getTime(),
+    name: 'UNKNOWN',
     x: 0,
     y: 0,
     prevX: 0,
@@ -216,7 +217,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.lastUpdate = new Date().getTime();
       io.sockets.in('room1').emit('updatedHP', socket.square);
     }
-    console.log(socket.square.hp);
+    // console.log(socket.square.hp);
     socket.square.lastUpdate = new Date().getTime();
     ships[socket.hash] = socket.square;
     socket.square.lastUpdate = new Date().getTime();
