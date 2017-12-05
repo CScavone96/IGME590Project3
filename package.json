@@ -15,7 +15,7 @@
     "babel-preset-env": "^1.6.1",
     "nodemon": "^1.12.1"
   },
-  "scripts": {  
+  "scripts": {
     "start": "node ./src/app.js",
     "pretest": "eslint ./src --fix",
     "test": "echo \"Tests complete\"",

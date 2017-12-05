@@ -45,6 +45,27 @@
     body
     {
         background-color: #000;
+        color: #fff;
+        font-family: Consolas, monaco, monospace;
+        font-size: 14px;
+        font-style: normal;
+        font-variant: normal;
+        font-weight: 400;
+        line-height: 20px;
+        text-align: center;
+    }
+    ul {
+        list-style-type: none;
+    }
+    #center 
+    {
+      text-align: center;
+    }
+    #controls
+    {
+      color: #fff;
+      display: inline-block;
+      text-align: center;
     }
     </style>
     <meta charset="utf-8"/>
@@ -53,10 +74,25 @@
 </head>
 <body>
     <h1>Space Ships Online!</h1>
+    <div id="center">
+    <div id="controls">
+      <label for="user">Username:</label>
+      <input id="username" name="user" type="text"/>
+      <label for="color">Color:</label>
+      <input id="colorid" name="color"type="color" value="#ff0000">
+      <input id="connect" type='button' value='connect'/>
+    </div>
+    </div>
     <div class = "wrapper">
         <canvas id="canvas" height="576" width="1024">No canvas</canvas>
         <canvas id="uiCanvas" height="576" width="1024">No canvas</canvas>
     </div>
+    <ul>
+    <li>WASD or Arrows to fly</li>
+    <li>Space bar to shoot</li>
+    <li>Press T to show a scoreboard</li>
+    <li>Destroy other players to get points</li>    
+    </ul>
     <img id="spaceShip" class="hidden" src="Spaceship.png" alt="spaceship sprite" />
 </body>
 </html>

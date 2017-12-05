@@ -16,6 +16,7 @@ let uiCanvas;
 let uictx;
 let displayScore = false;
 let canScore = false;
+let user = "UNKOWN";
 window.addEventListener('keydown',function(e){ keyState[e.keyCode || e.which] = true; },true);    
 window.addEventListener('keyup',function(e){ keyState[e.keyCode || e.which] = false; },true);
 
@@ -30,7 +31,7 @@ const updateHP = (data) => {
 	return;
   }
   
-  const square = squares[data.hash]; 
+  let square = squares[data.hash]; 
   
   if(squares[data.hash].lastUpdate >= data.lastUpdate) {
 	return;
@@ -40,13 +41,25 @@ const updateHP = (data) => {
 }
 
 
+const updateScore = (data) => {
+  if(!squares[data.hash]) {
+	return;
+  }
+  
+  let square = squares[data.hash];
+  square.points = data.points;
+  squares[data.hash] = square;
+  squares[data.hash].points = data.points;
+}
+
+
 const respawn = (data) => { //Sets the players position for respawns
    if(!squares[data.hash]) {
 	squares[data.hash] = data;
 	return;
   }
   
-  const square = squares[data.hash]; 
+  let square = squares[data.hash]; 
   
   square.lastUpdate = data.lastUpdate;
   square.x = data.x;
@@ -63,7 +76,7 @@ const update = (data) => { //Updates square/ship data
 	return;
   }
   
-  const square = squares[data.hash]; 
+  let square = squares[data.hash]; 
   
   if(squares[data.hash].lastUpdate >= data.lastUpdate) {
 	return;
@@ -86,6 +99,8 @@ const update = (data) => { //Updates square/ship data
   square.shoot = data.shoot;
   square.canShoot = data.canShoot;
   square.hp = data.hp;
+  square.name = data.name;
+  square.points = data.points;
 };
 
 const removeUser = (hash) => { //Removes a user from the 
@@ -96,8 +111,13 @@ const removeUser = (hash) => { //Removes a user from the
 
 const setUser = (data) => {
   hash = data.hash;
+  user = document.querySelector("#username").value;
   squares[hash] = data;
+  squares[hash].name = user;
+  socket.emit('setName', {name: user});    
   setInterval(keyHandler, 20);
+  let controls = document.getElementById("controls");
+  controls.style.display = "none";
   requestAnimationFrame(redraw);
 };
 
@@ -155,6 +175,13 @@ const newBullet = (data) => { //Handles a new bullet
 
 const bulletHit = (data) => { //Handles a bullet collision
     squares[data.ship.hash].hp = data.ship.hp;
+    const square = squares[hash];
+    if(data.ship.hp < 1 && data.ship.hp > -1){
+        if(hash == data.bullet.creator){        
+            let newdata = {points: 1, hash: data.bullet.creator}
+            socket.emit('changePoints', newdata);
+        }
+    }
     delete bullets[data.bullet.count];
 }
 
@@ -199,8 +226,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
   const keys = Object.keys(squares);
   for(let i = 0; i < keys.length; i++) {
 
-	const square = squares[keys[i]];
-
+	let square = squares[keys[i]];
 	if(square.alpha < 1) square.alpha += 0.05;
 
 	if(square.hash === hash) {
@@ -211,7 +237,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
       uictx.font = '16px Verdana';
       uictx.textAlign="center";
       uictx.fillStyle="#42a7f4";
-      uictx.fillText(square.name, 512, 50*(i+1));
+      uictx.fillText(square.name + ": " + square.points, 512, 50*(i+1));
     }
     
 	square.x = lerp(square.prevX, square.destX, square.alpha);
@@ -344,7 +370,12 @@ const keyHandler = () => { //Handles keys for movement shooting
     }
 };
 
-const init = () => { //Initializes client
+const init = () => { //Handles initializing  client
+            const connect = document.querySelector("#connect");
+            connect.addEventListener('click', connectSocket);           
+        };
+
+const connectSocket = () => { //Initializes client
     spaceShip = document.querySelector('#spaceShip');
 	canvas = document.querySelector('#canvas');
     uiCanvas = document.querySelector('#uiCanvas');
@@ -361,6 +392,7 @@ const init = () => { //Initializes client
     socket.on('setPowerUps', setPowerUps);
     socket.on('respawn', respawn);
     socket.on('updatedHP', updateHP);
+    socket.on('updatedScore', updateScore);
 	socket.on('updatedMovement', update);
     socket.on('powerUp', powerUp);	
     socket.on('newBullet', newBullet);   		

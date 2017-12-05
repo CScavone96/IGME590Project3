@@ -161,13 +161,12 @@ const checkPowerUps = () => { // Manages collisions and distribution for powerup
 io.on('connection', (sock) => { // Handles setting up socket connection
   const socket = sock;
 
-
   socket.join('room1');
 
   socket.square = {
     hash: xxh.h32(`${socket.id}${Date.now()}`, 0xB105F00D).toString(16),
     lastUpdate: new Date().getTime(),
-    name: 'UNKNOWN',
+    name: 'SOCKETNAMEDEFAULT',
     x: 0,
     y: 0,
     prevX: 0,
@@ -187,18 +186,52 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     shoot: false,
     canShoot: true,
     hp: 3,
+    points: 0,
   };
-  socket.square.x = Math.floor((Math.random() * 3546) - 1532);
-  socket.square.y = Math.floor((Math.random() * 1980) - 862);
+  // socket.square.x = Math.floor((Math.random() * 3546) - 1532);
+  // socket.square.y = Math.floor((Math.random() * 1980) - 862);
   socket.square.destX = socket.square.x;
   socket.square.destY = socket.square.y;
-  ships[socket.hash] = socket.square;
+  ships[socket.square.hash] = socket.square;
   socket.emit('joined', socket.square);
   socket.emit('setStars', stars);
   socket.emit('setPowerUps', powerUps);
   socket.emit('setWorld', world);
+  socket.on('setName', (data) => {
+    let nameTaken = false;
+    for (let i = 0; i < ships.length; i++) {
+      if (ships[i].name === data.name) {
+        nameTaken = true;
+      }
+    }
+    if (!nameTaken) {
+      socket.square.name = data.name;
+      socket.name = data.name;
+      ships[socket.square.hash].name = data.name;
+      console.log(`Socket.name set to ${socket.square.name}`);
+      // socket.emit('onJoined', data);
+      // socket.join('room1');
+      /* points[socket.name] = 0;
+      console.log(`${data.name} joined`);
+      //emitPlayers(socket);
+      socket.emit('onJoined', data);
+      socket.on('disconnect', () => {
+        io.sockets.in('room1').emit('removePlayer', socket.name);
+        const userInd = users.indexOf(socket.name);
+        users.splice(userInd, 1);
+        emitPlayers(socket);
+        delete draws[socket.name];
+        socket.leave('room1');
+     }); */
+    } else {
+      socket.name = 'NAMETAKEN';
+      socket.emit('nameTaken');
+      socket.disconnect();
+    }
+  });
   socket.on('movementUpdate', (data) => { // Updates health and location of ships
     socket.square = data;
+    socket.square.points = ships[socket.square.hash].points;
     socket.square.lastUpdate = new Date().getTime();
     if (socket.square.hp < 0 && socket.square.hp > -60) {
       socket.square.hp--;
@@ -217,9 +250,9 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.lastUpdate = new Date().getTime();
       io.sockets.in('room1').emit('updatedHP', socket.square);
     }
-    // console.log(socket.square.hp);
+    io.sockets.in('room1').emit('updatedScore', socket.square);
     socket.square.lastUpdate = new Date().getTime();
-    ships[socket.hash] = socket.square;
+    ships[socket.square.hash] = socket.square;
     socket.square.lastUpdate = new Date().getTime();
     socket.broadcast.to('room1').emit('updatedMovement', socket.square);
   });
@@ -238,6 +271,12 @@ io.on('connection', (sock) => { // Handles setting up socket connection
 
     io.sockets.in('room1').emit('newBullet', bullets[bulletCount]);
     bulletCount++;
+  });
+
+  socket.on('changePoints', (data) => { // Handles points
+    const ship = ships[data.hash];
+    ship.points += 1;
+    console.log(`Ship ${ship.hash} points are ${ship.points}`);
   });
 
   socket.on('disconnect', () => { // Handles socket disconnecting
