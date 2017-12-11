@@ -17,6 +17,7 @@ let uictx;
 let displayScore = false;
 let canScore = false;
 let user = "UNKOWN";
+let hpNotification = 0;
 window.addEventListener('keydown',function(e){ keyState[e.keyCode || e.which] = true; },true);    
 window.addEventListener('keyup',function(e){ keyState[e.keyCode || e.which] = false; },true);
 
@@ -101,6 +102,7 @@ const update = (data) => { //Updates square/ship data
   square.hp = data.hp;
   square.name = data.name;
   square.points = data.points;
+  square.spreadPower = data.spreadPower;
 };
 
 const removeUser = (hash) => { //Removes a user from the 
@@ -166,7 +168,17 @@ const clamp = (value, min, max) => { //Clamp two values
 }
 
 const powerUp = (data) => { //Handles power up collision
-    squares[data.ship.hash].hp++;
+    console.log(data);
+    if(data.powerUp.type == 1){
+        squares[data.ship.hash].hp++;
+        hpNotification = 75;
+    }
+    else if (data.powerUp.type == 2){
+        let newdata = {spreadPower: 5, hash: data.ship.hash}
+        squares[data.ship.hash].spreadPower = newdata.spreadPower*15;
+        socket.emit('spreadPower', newdata);
+        //squares[data.ship.hash].spreadPower = 10;
+    }
 }
 
 const newBullet = (data) => { //Handles a new bullet
@@ -182,7 +194,9 @@ const bulletHit = (data) => { //Handles a bullet collision
             socket.emit('changePoints', newdata);
         }
     }
-    delete bullets[data.bullet.count];
+    if(data.bullet){
+        delete bullets[data.bullet.count];
+    }
 }
 
 const bulletUpdate = (data) => { //Updates bullets collection
@@ -212,7 +226,12 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
   
   for(let i = 0; i < powerUps.length; i++) {
     if(Math.hypot(playerSquare.x-powerUps[i].x, playerSquare.y-powerUps[i].y) < canvas.width){
-        ctx.fillStyle="#55d661";
+        if(powerUps[i].type == 1){
+            ctx.fillStyle="#6bed34";
+        }
+        else{
+            ctx.fillStyle="#ed8434";
+        }
         ctx.beginPath();
         ctx.arc(powerUps[i].x, powerUps[i].y,8,0,2*Math.PI);
         ctx.fill();
@@ -234,7 +253,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
 	}
     
     if(showScoreboard){
-      uictx.font = '16px Verdana';
+      uictx.font = '18px Verdana';
       uictx.textAlign="center";
       uictx.fillStyle="#42a7f4";
       uictx.fillText(square.name + ": " + square.points, 512, 50*(i+1));
@@ -248,7 +267,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
     else{
         if(square.hp > 0)
         {
-            ctx.font = '10px Verdana';
+            ctx.font = '14px Verdana';
             ctx.textAlign="center";
             ctx.fillStyle="#f44245";
             ctx.fillText(square.hp, square.x+ square.width/2, square.y + 50);
@@ -269,7 +288,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
     {
         
       ctx.filter = "none"
-      uictx.font = '16px Verdana';
+      uictx.font = '20px Verdana';
       uictx.textAlign="center";
       uictx.fillStyle="#42a7f4";
       ctx.fillStyle="#42a7f4";
@@ -280,10 +299,26 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
     }
     if(playerSquare.hp < 0)
     {
-        ctx.font = '16px Verdana';
+        ctx.font = '20px Verdana';
         ctx.textAlign="center";
         ctx.fillStyle="#42a7f4";
         ctx.fillText("Respawning", playerSquare.x + playerSquare.width/2, playerSquare.y + 50);
+    }
+    if(playerSquare.spreadPower > 0)
+    {
+        ctx.font = '20px Verdana';
+        ctx.textAlign="center";
+        ctx.fillStyle="#f4a941";
+        ctx.fillText("NOVA POWER UP!", playerSquare.x + playerSquare.width/2, playerSquare.y + 150);
+        playerSquare.spreadPower--;
+    }
+    if(hpNotification > 0)
+    {
+        ctx.font = '20px Verdana';
+        ctx.textAlign="center";
+        ctx.fillStyle="#41f498";
+        ctx.fillText("HEALTH GAINED!", playerSquare.x + playerSquare.width/2, playerSquare.y + 100);
+        hpNotification--;
     }
     requestAnimationFrame(redraw);
 };

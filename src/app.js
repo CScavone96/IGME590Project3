@@ -71,26 +71,26 @@ const checkCollision = (ship, bullet) => { // handles with collisions between sh
 
 const createStars = (starCount) => { // Creates stars 
   for (let i = 0; i < starCount; i++) {
-    const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
-    const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
+    const xPos = Math.floor((Math.random() * world.width * 5) - world.width);
+    const yPos = Math.floor((Math.random() * world.height * 5) - world.height);
     const s = Math.floor((Math.random() * 8) + 4);
-    stars[i] = { x: xPos, y: yPos, size: s };
+    stars[i] = { x: xPos, y: yPos, size: s};
   }
 };
 
-createStars(3500);
+createStars(7500);
 
 
 const createPowerUps = (starCount) => { // Creates power ups 
   for (let i = 0; i < starCount; i++) {
     const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
     const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
-    const t = Math.floor((Math.random() * 1) + 1);
+    const t = Math.floor((Math.random() * 2) + 1);
     powerUps[i] = { x: xPos, y: yPos, height: 16, width: 16, type: t };
   }
 };
 
-createPowerUps(35);
+createPowerUps(105);
 
 const checkBullets = () => { // Manages collisions and distribution for powerups
   const bullKeys = Object.keys(bullets);
@@ -99,24 +99,24 @@ const checkBullets = () => { // Manages collisions and distribution for powerups
     const bullet = bullets[bullKeys[i]];
     if (typeof bullet !== 'undefined') {
       bullet.life--;
-      if (bullet.dir === 0) {
+      if (bullet.dir === 0) { // Up 0
         bullet.y -= bullet.speed;
-      } else if (bullet.dir === 1) {
+      } else if (bullet.dir === 1) { // Up-right 1
         bullet.x += bullet.speed;
         bullet.y -= bullet.speed;
-      } else if (bullet.dir === 2) {
+      } else if (bullet.dir === 2) { // Right 2
         bullet.x += bullet.speed;
-      } else if (bullet.dir === 3) {
+      } else if (bullet.dir === 3) { //Down-right 3
         bullet.x += bullet.speed;
         bullet.y += bullet.speed;
-      } else if (bullet.dir === 4) {
+      } else if (bullet.dir === 4) { // Down 4
         bullet.y += bullet.speed;
-      } else if (bullet.dir === 5) {
+      } else if (bullet.dir === 5) { //Down-left 5
         bullet.y += bullet.speed;
         bullet.x -= bullet.speed;
-      } else if (bullet.dir === 6) {
+      } else if (bullet.dir === 6) { //Left 6
         bullet.x -= bullet.speed;
-      } else if (bullet.dir === 7) {
+      } else if (bullet.dir === 7) {//Up-left 7
         bullet.x -= bullet.speed;
         bullet.y -= bullet.speed;
       }
@@ -185,6 +185,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     bulletSpeed: 5,
     shoot: false,
     canShoot: true,
+    spreadPower: 0,
     hp: 3,
     points: 0,
   };
@@ -208,7 +209,6 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.name = data.name;
       socket.name = data.name;
       ships[socket.square.hash].name = data.name;
-      console.log(`Socket.name set to ${socket.square.name}`);
       // socket.emit('onJoined', data);
       // socket.join('room1');
       /* points[socket.name] = 0;
@@ -231,7 +231,12 @@ io.on('connection', (sock) => { // Handles setting up socket connection
   });
   socket.on('movementUpdate', (data) => { // Updates health and location of ships
     socket.square = data;
-    socket.square.points = ships[socket.square.hash].points;
+    if(ships[socket.square.hash]){
+        socket.square.points = ships[socket.square.hash].points;
+    }
+    if(socket.square.hash){
+        socket.square.spreadPower = ships[socket.square.hash].spreadPower;
+    }
     socket.square.lastUpdate = new Date().getTime();
     if (socket.square.hp < 0 && socket.square.hp > -60) {
       socket.square.hp--;
@@ -258,25 +263,62 @@ io.on('connection', (sock) => { // Handles setting up socket connection
   });
 
   socket.on('shoot', (data) => { // Handles shooting from socket
-    bullets[bulletCount] = {
-      x: data.x + (data.width / 2),
-      y: data.y + (data.height / 2),
-      dir: data.dir,
-      speed: data.bulletSpeed,
-      count: bulletCount,
-      height: 10,
-      width: 10,
-      creator: data.hash,
-      life: 180 };
-
-    io.sockets.in('room1').emit('newBullet', bullets[bulletCount]);
-    bulletCount++;
+    let spread = false;
+    if(ships[socket.square.hash].spreadPower > 0){
+        ships[socket.square.hash].spreadPower--;
+        console.log(ships[socket.square.hash].spreadPower);
+        spread = true;
+    }
+    if(!spread){
+        bullets[bulletCount] = {
+          x: data.x + (data.width / 2),
+          y: data.y + (data.height / 2),
+          dir: data.dir,
+          speed: data.bulletSpeed,
+          count: bulletCount,
+          height: 10,
+          width: 10,
+          creator: data.hash,
+          life: 180,
+          spread: 0};
+        io.sockets.in('room1').emit('newBullet', bullets[bulletCount]);
+        bulletCount++;
+    }
+    else{
+        for(let i = 0; i < 8; i++){
+            bullets[bulletCount] = {
+              x: data.x + (data.width / 2),
+              y: data.y + (data.height / 2),
+              dir: i,
+              speed: data.bulletSpeed,
+              count: bulletCount,
+              height: 10,
+              width: 10,
+              creator: data.hash,
+              life: 180, 
+              spread: 1};
+            /*if(i === 1){
+               bullets[bulletCount].x += (data.width / 2) * 3;
+               bullets[bulletCount].y += (data.height / 2) * 3;
+            }
+            if(bullets[bulletCount].dir === 1 || bullets[bulletCount].dir === 5){
+                //bullets[bulletCount].x += i * 30;
+                bullets[bulletCount].y += i * 34;
+            }*/
+            io.sockets.in('room1').emit('newBullet', bullets[bulletCount]);
+            bulletCount++;
+        }
+    }
+  });
+  
+  socket.on('spreadPower', (data) => { // Handles points
+    const ship = ships[data.hash];
+    ship.spreadPower += data.spreadPower;
   });
 
   socket.on('changePoints', (data) => { // Handles points
     const ship = ships[data.hash];
     ship.points += 1;
-    console.log(`Ship ${ship.hash} points are ${ship.points}`);
   });
 
   socket.on('disconnect', () => { // Handles socket disconnecting
