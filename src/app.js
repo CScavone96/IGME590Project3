@@ -7,10 +7,15 @@ const PORT = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const spaceShip = fs.readFileSync(`${__dirname}/../hosted/Spaceship.png`);
 
+const ad = fs.readFileSync(`${__dirname}/../hosted/skyscraperad.png`);
+
 const handler = (req, res) => {
   if (req.url === '/Spaceship.png') {
     res.writeHead(200, { 'Content-Type': 'image/png' });
     res.end(spaceShip);
+  } else if (req.url === '/skyscraperad.png') {
+    res.writeHead(200, { 'Content-Type': 'image/png' });
+    res.end(ad);
   } else if (req.url === '/bundle.js') {
     fs.readFile(`${__dirname}/../hosted/bundle.js`, (err, data) => {
       if (err) {
@@ -74,7 +79,7 @@ const createStars = (starCount) => { // Creates stars
     const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
     const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
     const s = Math.floor((Math.random() * 8) + 4);
-    stars[i] = { x: xPos, y: yPos, size: s};
+    stars[i] = { x: xPos, y: yPos, size: s };
   }
 };
 
@@ -106,24 +111,23 @@ const checkBullets = () => { // Manages collisions and distribution for powerups
         bullet.y -= bullet.speed;
       } else if (bullet.dir === 2) { // Right 2
         bullet.x += bullet.speed;
-      } else if (bullet.dir === 3) { //Down-right 3
+      } else if (bullet.dir === 3) { // Down-right 3
         bullet.x += bullet.speed;
         bullet.y += bullet.speed;
       } else if (bullet.dir === 4) { // Down 4
         bullet.y += bullet.speed;
-      } else if (bullet.dir === 5) { //Down-left 5
+      } else if (bullet.dir === 5) { // Down-left 5
         bullet.y += bullet.speed;
         bullet.x -= bullet.speed;
-      } else if (bullet.dir === 6) { //Left 6
+      } else if (bullet.dir === 6) { // Left 6
         bullet.x -= bullet.speed;
-      } else if (bullet.dir === 7) {//Up-left 7
+      } else if (bullet.dir === 7) { // Up-left 7
         bullet.x -= bullet.speed;
         bullet.y -= bullet.speed;
       }
       for (let k = 0; k < shipKeys.length; k++) {
         const ship = ships[shipKeys[k]];
         if (ship.hash !== bullet.creator) {
-          // console.log(`${ship.hash} ${bullet.creator}`);
           checkCollision(ship, bullet);
         }
       }
@@ -189,8 +193,8 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     hp: 3,
     points: 0,
   };
-  // socket.square.x = Math.floor((Math.random() * 3546) - 1532);
-  // socket.square.y = Math.floor((Math.random() * 1980) - 862);
+  socket.square.x = Math.floor((Math.random() * 3546) - 1532);
+  socket.square.y = Math.floor((Math.random() * 1980) - 862);
   socket.square.destX = socket.square.x;
   socket.square.destY = socket.square.y;
   ships[socket.square.hash] = socket.square;
@@ -209,20 +213,6 @@ io.on('connection', (sock) => { // Handles setting up socket connection
       socket.square.name = data.name;
       socket.name = data.name;
       ships[socket.square.hash].name = data.name;
-      // socket.emit('onJoined', data);
-      // socket.join('room1');
-      /* points[socket.name] = 0;
-      console.log(`${data.name} joined`);
-      //emitPlayers(socket);
-      socket.emit('onJoined', data);
-      socket.on('disconnect', () => {
-        io.sockets.in('room1').emit('removePlayer', socket.name);
-        const userInd = users.indexOf(socket.name);
-        users.splice(userInd, 1);
-        emitPlayers(socket);
-        delete draws[socket.name];
-        socket.leave('room1');
-     }); */
     } else {
       socket.name = 'NAMETAKEN';
       socket.emit('nameTaken');
@@ -231,14 +221,14 @@ io.on('connection', (sock) => { // Handles setting up socket connection
   });
   socket.on('movementUpdate', (data) => { // Updates health and location of ships
     socket.square = data;
-    if(ships[socket.square.hash]){
-        socket.square.points = ships[socket.square.hash].points;
+    if (ships[socket.square.hash]) {
+      socket.square.points = ships[socket.square.hash].points;
     }
-    if(socket.square.hash){
-        socket.square.spreadPower = ships[socket.square.hash].spreadPower;
-    } 
-    if(socket.square.hash){
-        socket.square.speed = ships[socket.square.hash].speed;
+    if (socket.square.hash) {
+      socket.square.spreadPower = ships[socket.square.hash].spreadPower;
+    }
+    if (socket.square.hash) {
+      socket.square.speed = ships[socket.square.hash].speed;
     }
     socket.square.lastUpdate = new Date().getTime();
     if (socket.square.hp < 0 && socket.square.hp > -60) {
@@ -267,58 +257,48 @@ io.on('connection', (sock) => { // Handles setting up socket connection
 
   socket.on('shoot', (data) => { // Handles shooting from socket
     let spread = false;
-    if(ships[socket.square.hash].spreadPower > 0){
-        ships[socket.square.hash].spreadPower--;
-        console.log(ships[socket.square.hash].spreadPower);
-        spread = true;
+    if (ships[socket.square.hash].spreadPower > 0) {
+      ships[socket.square.hash].spreadPower--;
+      spread = true;
     }
-    if(!spread){
+    if (!spread) {
+      bullets[bulletCount] = {
+        x: data.x + (data.width / 2),
+        y: data.y + (data.height / 2),
+        dir: data.dir,
+        speed: data.bulletSpeed,
+        count: bulletCount,
+        height: 10,
+        width: 10,
+        creator: data.hash,
+        life: 180,
+        spread: 0 };
+      io.sockets.in('room1').emit('newBullet', bullets[bulletCount]);
+      bulletCount++;
+    } else {
+      for (let i = 0; i < 8; i++) {
         bullets[bulletCount] = {
           x: data.x + (data.width / 2),
           y: data.y + (data.height / 2),
-          dir: data.dir,
+          dir: i,
           speed: data.bulletSpeed,
           count: bulletCount,
           height: 10,
           width: 10,
           creator: data.hash,
           life: 180,
-          spread: 0};
+          spread: 1 };
         io.sockets.in('room1').emit('newBullet', bullets[bulletCount]);
         bulletCount++;
-    }
-    else{
-        for(let i = 0; i < 8; i++){
-            bullets[bulletCount] = {
-              x: data.x + (data.width / 2),
-              y: data.y + (data.height / 2),
-              dir: i,
-              speed: data.bulletSpeed,
-              count: bulletCount,
-              height: 10,
-              width: 10,
-              creator: data.hash,
-              life: 180, 
-              spread: 1};
-            /*if(i === 1){
-               bullets[bulletCount].x += (data.width / 2) * 3;
-               bullets[bulletCount].y += (data.height / 2) * 3;
-            }
-            if(bullets[bulletCount].dir === 1 || bullets[bulletCount].dir === 5){
-                //bullets[bulletCount].x += i * 30;
-                bullets[bulletCount].y += i * 34;
-            }*/
-            io.sockets.in('room1').emit('newBullet', bullets[bulletCount]);
-            bulletCount++;
-        }
+      }
     }
   });
-  
+
   socket.on('spreadPower', (data) => { // Handles points
     const ship = ships[data.hash];
     ship.spreadPower += data.spreadPower;
   });
-  
+
   socket.on('changeSpeed', (data) => { // Handles points
     const ship = ships[data.hash];
     ship.speed += data.speed;
@@ -331,6 +311,7 @@ io.on('connection', (sock) => { // Handles setting up socket connection
 
   socket.on('disconnect', () => { // Handles socket disconnecting
     io.sockets.in('room1').emit('left', socket.square.hash);
+    console.log(`${socket.square.name} left`);
     socket.leave('room1');
   });
 });

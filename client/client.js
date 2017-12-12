@@ -18,6 +18,7 @@ let displayScore = false;
 let canScore = false;
 let user = "UNKOWN";
 let hpNotification = 0;
+let lastHealth = 3;
 window.addEventListener('keydown',function(e){ keyState[e.keyCode || e.which] = true; },true);    
 window.addEventListener('keyup',function(e){ keyState[e.keyCode || e.which] = false; },true);
 
@@ -107,11 +108,12 @@ const update = (data) => { //Updates square/ship data
 
 const removeUser = (hash) => { //Removes a user from the 
   if(squares[hash]) {
+    console.log(hash + " player removed");
 	delete squares[hash];
   }
 };
 
-const setUser = (data) => {
+const setUser = (data) => { //Establishes user data and displays canvas
   hash = data.hash;
   user = document.querySelector("#username").value;
   squares[hash] = data;
@@ -180,13 +182,11 @@ const powerUp = (data) => { //Handles power up collision
         let newdata = {spreadPower: 1, hash: data.ship.hash}
         squares[data.ship.hash].spreadPower = 75;
         socket.emit('spreadPower', newdata);
-        //squares[data.ship.hash].spreadPower = 10;
     }
     else if (data.powerUp.type == 3){
         let newdata = {speed: 75, hash: data.ship.hash}
         squares[data.ship.hash].speed = 75;
         socket.emit('changeSpeed', newdata);
-        //squares[data.ship.hash].spreadPower = 10;
     }
 }
 
@@ -215,9 +215,14 @@ const bulletUpdate = (data) => { //Updates bullets collection
 
 const redraw = (time) => { //Draws the game to the canvas and requests animation frames
   updatePosition();
+  if(squares[hash].hp < lastHealth){
+    ctx.fillStyle="#ff0000"; 
+  }
+  else{
+    ctx.fillStyle="#000000";
+  }
   ctx.setTransform(1,0,0,1,0,0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle="#000000";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   let playerDraw = false;
@@ -310,7 +315,6 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
       uictx.textAlign="center";
       uictx.fillStyle="#42a7f4";
       ctx.fillStyle="#42a7f4";
-      //ctx.fillText(playerSquare.hp, playerSquare.x + playerSquare.width/2, playerSquare.y + 50);
       uictx.fillText("HP: " + playerSquare.hp, 50, 50);
       ctx.fillStyle="#00ffff";
       drawRotated((playerSquare.dir)*(360/8), playerSquare);
@@ -319,7 +323,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
     {
         ctx.font = '20px Verdana';
         ctx.textAlign="center";
-        ctx.fillStyle="#42a7f4";
+        ctx.fillStyle="#000000";
         ctx.fillText("Respawning", playerSquare.x + playerSquare.width/2, playerSquare.y + 50);
     }
     if(playerSquare.spreadPower > 0)
@@ -338,6 +342,7 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
         ctx.fillText("HEALTH GAINED!", playerSquare.x + playerSquare.width/2, playerSquare.y + 100);
         hpNotification--;
     }
+    lastHealth = playerSquare.hp;
     requestAnimationFrame(redraw);
 };
 
@@ -429,30 +434,32 @@ const init = () => { //Handles initializing  client
         };
 
 const connectSocket = () => { //Initializes client
-    spaceShip = document.querySelector('#spaceShip');
-	canvas = document.querySelector('#canvas');
-    uiCanvas = document.querySelector('#uiCanvas');
-	ctx = canvas.getContext('2d');
-    uictx = uiCanvas.getContext('2d');
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
-    ctx.imageSmoothingEnabled = false; 
-	socket = io.connect();
-	
-	socket.on('joined', setUser);
-    socket.on('setWorld', setWorld);
-	socket.on('setStars', setStars);
-    socket.on('setPowerUps', setPowerUps);
-    socket.on('respawn', respawn);
-    socket.on('updatedHP', updateHP);
-    socket.on('updatedScore', updateScore);
-	socket.on('updatedMovement', update);
-    socket.on('powerUp', powerUp);	
-    socket.on('newBullet', newBullet);   		
-    socket.on('bulletHit', bulletHit);
-    socket.on('bulletUpdate', bulletUpdate);
-    
-	socket.on('left', removeUser);
+    if(document.querySelector("#username").value != ""){
+        spaceShip = document.querySelector('#spaceShip');
+        canvas = document.querySelector('#canvas');
+        uiCanvas = document.querySelector('#uiCanvas');
+        ctx = canvas.getContext('2d');
+        uictx = uiCanvas.getContext('2d');
+        ctx.webkitImageSmoothingEnabled = false;
+        ctx.mozImageSmoothingEnabled = false;
+        ctx.imageSmoothingEnabled = false; 
+        socket = io.connect();
+        
+        socket.on('joined', setUser);
+        socket.on('setWorld', setWorld);
+        socket.on('setStars', setStars);
+        socket.on('setPowerUps', setPowerUps);
+        socket.on('respawn', respawn);
+        socket.on('updatedHP', updateHP);
+        socket.on('updatedScore', updateScore);
+        socket.on('updatedMovement', update);
+        socket.on('powerUp', powerUp);	
+        socket.on('newBullet', newBullet);   		
+        socket.on('bulletHit', bulletHit);
+        socket.on('bulletUpdate', bulletUpdate);
+        
+        socket.on('left', removeUser);
+    }
 };
 
 window.onload = init;

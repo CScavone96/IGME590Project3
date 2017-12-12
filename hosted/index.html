@@ -61,6 +61,16 @@
     {
       text-align: center;
     }
+    #adl 
+    {
+      position:absolute;
+      left: 0px;
+    }
+    #adr 
+    {
+      position:absolute;
+      right: 0px;
+    }
     #controls
     {
       color: #fff;
@@ -78,11 +88,11 @@
     <div id="controls">
       <label for="user">Username:</label>
       <input id="username" name="user" type="text"/>
-      <label for="color">Color:</label>
-      <input id="colorid" name="color"type="color" value="#ff0000">
       <input id="connect" type='button' value='connect'/>
     </div>
     </div>
+    <img id = "adl" src="skyscraperad.png"/>
+    <img id = "adr" src="skyscraperad.png"/>
     <div class = "wrapper">
         <canvas id="canvas" height="576" width="1024">No canvas</canvas>
         <canvas id="uiCanvas" height="576" width="1024">No canvas</canvas>
