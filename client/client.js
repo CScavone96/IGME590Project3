@@ -171,12 +171,21 @@ const powerUp = (data) => { //Handles power up collision
     console.log(data);
     if(data.powerUp.type == 1){
         squares[data.ship.hash].hp++;
-        hpNotification = 75;
+        console.log(data.ship.hash + " " + hash);
+        if(data.ship.hash === hash){
+            hpNotification = 75;
+        }
     }
     else if (data.powerUp.type == 2){
-        let newdata = {spreadPower: 5, hash: data.ship.hash}
-        squares[data.ship.hash].spreadPower = newdata.spreadPower*15;
+        let newdata = {spreadPower: 1, hash: data.ship.hash}
+        squares[data.ship.hash].spreadPower = 75;
         socket.emit('spreadPower', newdata);
+        //squares[data.ship.hash].spreadPower = 10;
+    }
+    else if (data.powerUp.type == 3){
+        let newdata = {speed: 75, hash: data.ship.hash}
+        squares[data.ship.hash].speed = 75;
+        socket.emit('changeSpeed', newdata);
         //squares[data.ship.hash].spreadPower = 10;
     }
 }
@@ -229,8 +238,11 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
         if(powerUps[i].type == 1){
             ctx.fillStyle="#6bed34";
         }
-        else{
+        else if(powerUps[i].type == 2){
             ctx.fillStyle="#ed8434";
+        }
+        else{
+            ctx.fillStyle="#f0f722";
         }
         ctx.beginPath();
         ctx.arc(powerUps[i].x, powerUps[i].y,8,0,2*Math.PI);
@@ -276,6 +288,12 @@ const redraw = (time) => { //Draws the game to the canvas and requests animation
             drawRotated((square.dir)*(360/8), square);        
         }
     }
+  }
+  
+  if(playerSquare.speed > 3){
+      let newdata = {speed: -1, hash: playerSquare.hash}
+      squares[playerSquare.hash].speed--;
+      socket.emit('changeSpeed', newdata);
   }
   
   const bulls = Object.keys(bullets);

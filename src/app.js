@@ -71,26 +71,26 @@ const checkCollision = (ship, bullet) => { // handles with collisions between sh
 
 const createStars = (starCount) => { // Creates stars 
   for (let i = 0; i < starCount; i++) {
-    const xPos = Math.floor((Math.random() * world.width * 5) - world.width);
-    const yPos = Math.floor((Math.random() * world.height * 5) - world.height);
+    const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
+    const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
     const s = Math.floor((Math.random() * 8) + 4);
     stars[i] = { x: xPos, y: yPos, size: s};
   }
 };
 
-createStars(7500);
+createStars(3500);
 
 
 const createPowerUps = (starCount) => { // Creates power ups 
   for (let i = 0; i < starCount; i++) {
     const xPos = Math.floor((Math.random() * world.width * 2) - world.width);
     const yPos = Math.floor((Math.random() * world.height * 2) - world.height);
-    const t = Math.floor((Math.random() * 2) + 1);
+    const t = Math.floor((Math.random() * 3) + 1);
     powerUps[i] = { x: xPos, y: yPos, height: 16, width: 16, type: t };
   }
 };
 
-createPowerUps(105);
+createPowerUps(180);
 
 const checkBullets = () => { // Manages collisions and distribution for powerups
   const bullKeys = Object.keys(bullets);
@@ -236,6 +236,9 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     }
     if(socket.square.hash){
         socket.square.spreadPower = ships[socket.square.hash].spreadPower;
+    } 
+    if(socket.square.hash){
+        socket.square.speed = ships[socket.square.hash].speed;
     }
     socket.square.lastUpdate = new Date().getTime();
     if (socket.square.hp < 0 && socket.square.hp > -60) {
@@ -315,6 +318,11 @@ io.on('connection', (sock) => { // Handles setting up socket connection
     const ship = ships[data.hash];
     ship.spreadPower += data.spreadPower;
   });
+  
+  socket.on('changeSpeed', (data) => { // Handles points
+    const ship = ships[data.hash];
+    ship.speed += data.speed;
+  });
 
   socket.on('changePoints', (data) => { // Handles points
     const ship = ships[data.hash];
@@ -329,5 +337,5 @@ io.on('connection', (sock) => { // Handles setting up socket connection
 
 console.log(`listening on port ${PORT}`);
 
-setInterval(checkBullets, 10);
-setInterval(checkPowerUps, 10);
+setInterval(checkBullets, 12);
+setInterval(checkPowerUps, 17);
